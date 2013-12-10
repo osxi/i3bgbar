@@ -20,6 +20,7 @@ man/*.xml
 man/*.html
 *.tar.bz2*
 i3
+i3bar/i3bgbar
 i3-input/i3-input
 i3-nagbar/i3-nagbar
 i3-msg/i3-msg
