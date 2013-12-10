@@ -147,7 +147,7 @@ static int stdin_string(void *context, const unsigned char *val, unsigned int le
     if (strcasecmp(ctx->last_map_key, "color") == 0) {
         sasprintf(&(ctx->block.color), "%.*s", len, val);
     }
-    if (strcasecmp(ctx->last_map_key, "background-color") == 0) {
+    if (strcasecmp(ctx->last_map_key, "background_color") == 0) {
         sasprintf(&(ctx->block.bgcolor), "%.*s", len, val);
 	}
     if (strcasecmp(ctx->last_map_key, "align") == 0) {
