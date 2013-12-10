@@ -28,6 +28,8 @@
 /* Global variables for child_*() */
 i3bar_child child = { 0 };
 
+int inbar = 0;
+
 /* stdin- and sigchild-watchers */
 ev_io    *stdin_io;
 ev_child *child_sig;
@@ -54,8 +56,10 @@ typedef struct parser_ctx {
 parser_ctx parser_context;
 
 /* The buffer statusline points to */
-struct statusline_head statusline_head = TAILQ_HEAD_INITIALIZER(statusline_head);
-char *statusline_buffer = NULL;
+struct statusline_head l_statusline_head = TAILQ_HEAD_INITIALIZER(l_statusline_head);
+char *l_statusline_buffer = NULL;
+struct statusline_head r_statusline_head = TAILQ_HEAD_INITIALIZER(r_statusline_head);
+char *r_statusline_buffer = NULL;
 
 int child_stdin;
 
@@ -67,10 +71,12 @@ void cleanup(void) {
     if (stdin_io != NULL) {
         ev_io_stop(main_loop, stdin_io);
         FREE(stdin_io);
-        FREE(statusline_buffer);
-        /* statusline pointed to memory within statusline_buffer */
-        statusline = NULL;
-    }
+        FREE(l_statusline_buffer);
+        FREE(r_statusline_buffer);
+        /* statusline pointed to memory within *_statusline_buffer */
+        l_statusline = NULL;
+        r_statusline = NULL;
+	}
 
     if (child_sig != NULL) {
         ev_child_stop(main_loop, child_sig);
@@ -86,16 +92,27 @@ void cleanup(void) {
  *
  */
 static int stdin_start_array(void *context) {
-    struct status_block *first;
-    while (!TAILQ_EMPTY(&statusline_head)) {
-        first = TAILQ_FIRST(&statusline_head);
-        I3STRING_FREE(first->full_text);
-        FREE(first->color);
-        FREE(first->name);
-        FREE(first->instance);
-        TAILQ_REMOVE(&statusline_head, first, blocks);
-        free(first);
-    }
+	if ( inbar || !config.custom_ws ) {
+    	struct status_block *first;
+		struct statusline_head *head;
+
+		if ( inbar == 2 || !config.custom_ws )
+			head = &r_statusline_head;
+		else
+			head = &l_statusline_head;
+
+    	while (!TAILQ_EMPTY(head)) {
+        	first = TAILQ_FIRST(head); // right bar first
+        	I3STRING_FREE(first->full_text);
+        	FREE(first->color);
+        	FREE(first->name);
+        	FREE(first->instance);
+        	TAILQ_REMOVE(head, first, blocks);
+        	free(first);
+    	}
+	} else {
+		inbar = 2;
+	}
     return 1;
 }
 
@@ -203,18 +220,24 @@ static int stdin_end_map(void *context) {
         new_block->full_text = i3string_from_utf8("SPEC VIOLATION (null)");
     if (new_block->urgent)
         ctx->has_urgent = true;
-    TAILQ_INSERT_TAIL(&statusline_head, new_block, blocks);
+	if ( inbar == 2 || !config.custom_ws ) {
+    	TAILQ_INSERT_TAIL(&r_statusline_head, new_block, blocks);
+	} else {
+    	TAILQ_INSERT_TAIL(&l_statusline_head, new_block, blocks);
+	}
     return 1;
 }
 
 static int stdin_end_array(void *context) {
     DLOG("dumping statusline:\n");
     struct status_block *current;
-    TAILQ_FOREACH(current, &statusline_head, blocks) {
+    TAILQ_FOREACH(current, &r_statusline_head, blocks) {
         DLOG("full_text = %s\n", i3string_as_utf8(current->full_text));
         DLOG("color = %s\n", current->color);
     }
     DLOG("end of dump\n");
+	if ( inbar )
+		inbar--;
     return 1;
 }
 
@@ -263,7 +286,7 @@ static unsigned char *get_buffer(ev_io *watcher, int *ret_buffer_len) {
 }
 
 static void read_flat_input(char *buffer, int length) {
-    struct status_block *first = TAILQ_FIRST(&statusline_head);
+    struct status_block *first = TAILQ_FIRST(&r_statusline_head);
     /* Clear the old buffer if any. */
     I3STRING_FREE(first->full_text);
     /* Remove the trailing newline and terminate the string at the same
@@ -337,7 +360,7 @@ void stdin_io_first_line_cb(struct ev_loop *loop, ev_io *watcher, int revents) {
         /* In case of plaintext, we just add a single block and change its
          * full_text pointer later. */
         struct status_block *new_block = scalloc(sizeof(struct status_block));
-        TAILQ_INSERT_TAIL(&statusline_head, new_block, blocks);
+        TAILQ_INSERT_TAIL(&r_statusline_head, new_block, blocks);
         read_flat_input((char*)buffer, rec);
     }
     free(buffer);

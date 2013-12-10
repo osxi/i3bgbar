@@ -17,8 +17,10 @@
 typedef struct rect_t rect;
 
 struct ev_loop* main_loop;
-char            *statusline;
-char            *statusline_buffer;
+char            *l_statusline;
+char            *r_statusline;
+char            *l_statusline_buffer;
+char            *r_statusline_buffer;
 
 struct rect_t {
     int x;
@@ -62,7 +64,7 @@ struct status_block {
     TAILQ_ENTRY(status_block) blocks;
 };
 
-TAILQ_HEAD(statusline_head, status_block) statusline_head;
+TAILQ_HEAD(statusline_head, status_block) l_statusline_head, r_statusline_head;
 
 #include "child.h"
 #include "ipc.h"

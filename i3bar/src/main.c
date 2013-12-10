@@ -169,7 +169,8 @@ int main(int argc, char **argv) {
 
     kill_child();
 
-    FREE(statusline_buffer);
+    FREE(l_statusline_buffer);
+    FREE(r_statusline_buffer);
 
     clean_xcb();
     ev_default_destroy();

@@ -32,6 +32,7 @@ static enum {
     KEY_STOP_SIGNAL,
     KEY_CONT_SIGNAL,
     KEY_CLICK_EVENTS,
+    KEY_CUSTOM_WS,
     NO_KEY
 } current_key;
 
@@ -66,6 +67,9 @@ static int header_boolean(void *ctx, int val) {
         case KEY_CLICK_EVENTS:
             child->click_events = val;
             break;
+        case KEY_CUSTOM_WS:
+        	config.custom_ws = val;
+            break;
         default:
             break;
     }
@@ -89,6 +93,8 @@ static int header_map_key(void *ctx, const unsigned char *stringval, unsigned in
         current_key = KEY_CONT_SIGNAL;
     } else if (CHECK_KEY("click_events")) {
         current_key = KEY_CLICK_EVENTS;
+    } else if (CHECK_KEY("custom_workspace")) {
+        current_key = KEY_CUSTOM_WS;
     }
     return 1;
 }
