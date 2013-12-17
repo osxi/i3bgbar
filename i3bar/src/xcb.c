@@ -211,7 +211,7 @@ void refresh_statusline( int left ) {
             xcb_poly_line(xcb_connection, XCB_COORD_MODE_ORIGIN, (*statusline_pm),
                           (*statusline_ctx), 2,
                           (xcb_point_t[]){ { x - sep_offset, 2 },
-                                           { x - sep_offset, font.height - 2 } });
+                                           { x - sep_offset, font.height } });
         }
     }
 }
@@ -392,7 +392,7 @@ void handle_button(xcb_button_press_event_t *event) {
                 TAILQ_FOREACH_REVERSE(trayclient, walk->trayclients, tc_head, tailq) {
                     if (!trayclient->mapped)
                         continue;
-                    tray_width += (font.height + 2);
+                    tray_width += (font.height + 2 - 2);
                 }
 
                 int block_x = 0, last_block_x;
@@ -471,8 +471,8 @@ static void configure_trayclients(void) {
             clients++;
 
             DLOG("Configuring tray window %08x to x=%d\n",
-                 trayclient->win, output->rect.w - (clients * (font.height + 2)));
-            uint32_t x = output->rect.w - (clients * (font.height + 2));
+                 trayclient->win, output->rect.w - (clients * (font.height + 2 - 2)));
+            uint32_t x = output->rect.w - (clients * (font.height + 2 - 2));
             xcb_configure_window(xcb_connection,
                                  trayclient->win,
                                  XCB_CONFIG_WINDOW_X,
@@ -590,8 +590,8 @@ static void handle_client_message(xcb_client_message_event_t* event) {
              *   should do their best to cope with any size effectively
              */
             mask = XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT;
-            values[0] = font.height;
-            values[1] = font.height;
+            values[0] = font.height - 2;
+            values[1] = font.height - 2;
             xcb_configure_window(xcb_connection,
                                  client,
                                  mask,
@@ -766,10 +766,10 @@ static void handle_configure_request(xcb_configure_request_event_t *event) {
                 continue;
 
             xcb_rectangle_t rect;
-            rect.x = output->rect.w - (clients * (font.height + 2));
+            rect.x = output->rect.w - (clients * (font.height));
             rect.y = 2;
-            rect.width = font.height;
-            rect.height = font.height;
+            rect.width = font.height - 2;
+            rect.height = font.height - 2;
 
             DLOG("This is a tray window. x = %d\n", rect.x);
             fake_configure_notify(xcb_connection, rect, event->window, 0);
@@ -1483,8 +1483,8 @@ void reconfig_windows(bool redraw_bars) {
                                                                      root_screen->root_depth,
                                                                      walk->bar,
                                                                      xcb_root,
-                                                                     walk->rect.x, walk->rect.y + walk->rect.h - font.height - 6,
-                                                                     walk->rect.w, font.height + 6,
+                                                                     walk->rect.x, walk->rect.y + walk->rect.h - font.height - 6 - 2,
+                                                                     walk->rect.w, font.height + 6 - 2 - 2,
                                                                      0,
                                                                      XCB_WINDOW_CLASS_INPUT_OUTPUT,
                                                                      root_screen->root_visual,
@@ -1497,7 +1497,7 @@ void reconfig_windows(bool redraw_bars) {
                                                                     walk->buffer,
                                                                     walk->bar,
                                                                     walk->rect.w,
-                                                                    walk->rect.h);
+                                                                    walk->rect.h - 2);
 
             /* Set the WM_CLASS and WM_NAME (we don't need UTF-8) atoms */
             xcb_void_cookie_t class_cookie;
@@ -1558,12 +1558,12 @@ void reconfig_windows(bool redraw_bars) {
                 case POS_NONE:
                     break;
                 case POS_TOP:
-                    strut_partial.top = font.height + 6;
+                    strut_partial.top = font.height + 6 - 2;
                     strut_partial.top_start_x = walk->rect.x;
                     strut_partial.top_end_x = walk->rect.x + walk->rect.w;
                     break;
                 case POS_BOT:
-                    strut_partial.bottom = font.height + 6;
+                    strut_partial.bottom = font.height + 6 - 2;
                     strut_partial.bottom_start_x = walk->rect.x;
                     strut_partial.bottom_end_x = walk->rect.x + walk->rect.w;
                     break;
@@ -1730,18 +1730,18 @@ void draw_bars(bool unhide) {
                 /* We assume the tray icons are quadratic (we use the font
                  * *height* as *width* of the icons) because we configured them
                  * like this. */
-                traypx += font.height + 2;
+                traypx += font.height + 2 - 2;
             }
             /* Add 2px of padding if there are any tray icons */
             if (traypx > 0)
-                traypx += 2;
+                traypx += 2 - 2;
             xcb_copy_area(xcb_connection,
                           r_statusline_pm,
                           outputs_walk->buffer,
                           outputs_walk->bargc,
                           MAX(0, (int16_t)(r_statusline_width - outputs_walk->rect.w + 4)), 0,
                           MAX(0, (int16_t)(outputs_walk->rect.w - r_statusline_width - traypx - 4)), 0,
-                          MIN(outputs_walk->rect.w - traypx - 4, r_statusline_width), font.height + 2);
+                          MIN(outputs_walk->rect.w - traypx - 4, r_statusline_width), font.height + 2 );
         }
 
         if (config.disable_ws) {
@@ -1805,7 +1805,7 @@ void draw_bars(bool unhide) {
 	                          outputs_walk->bargc,
 	                          mask,
 	                          vals);
-	            xcb_rectangle_t rect = { i + 1, 2, ws_walk->name_width + 8, font.height + 2 };
+	            xcb_rectangle_t rect = { i + 1, 2, ws_walk->name_width + 8, font.height + 2};
 	            xcb_poly_fill_rectangle(xcb_connection,
 	                                    outputs_walk->buffer,
 	                                    outputs_walk->bargc,
@@ -1828,7 +1828,7 @@ void draw_bars(bool unhide) {
 	                          outputs_walk->bargc,
 	                          mask,
 	                          vals_border);
-	            xcb_rectangle_t rect_border = { i, 1, binding.width + 10, font.height + 4 };
+	            xcb_rectangle_t rect_border = { i, 1, binding.width + 10, font.height + 4};
 	            xcb_poly_fill_rectangle(xcb_connection,
 	                                    outputs_walk->buffer,
 	                                    outputs_walk->bargc,
