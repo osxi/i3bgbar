@@ -1,4 +1,4 @@
-ALL_TARGETS += i3bar/i3bgbar
+ALL_TARGETS += i3bar/i3bar
 INSTALL_TARGETS += install-i3bar
 CLEAN_TARGETS += clean-i3bar
 
@@ -14,14 +14,14 @@ i3bar/src/%.o: i3bar/src/%.c $(i3bar_HEADERS)
 	echo "[i3bar] CC $<"
 	$(CC) $(I3_CPPFLAGS) $(XCB_CPPFLAGS) $(CPPFLAGS) $(i3bar_CFLAGS) $(I3_CFLAGS) $(CFLAGS) -Ii3bar/include -c -o $@ $<
 
-i3bar/i3bgbar: libi3.a $(i3bar_OBJECTS)
-	echo "[i3bar] Link i3bgbar"
+i3bar/i3bar: libi3.a $(i3bar_OBJECTS)
+	echo "[i3bar] Link i3bar"
 	$(CC) $(I3_LDFLAGS) $(LDFLAGS) -o $@ $(filter-out libi3.a,$^) $(LIBS) $(i3bar_LIBS)
 
 install-i3bar: i3bar/i3bar
 	echo "[i3bar] Install"
 	$(INSTALL) -d -m 0755 $(DESTDIR)$(PREFIX)/bin
-	$(INSTALL) -m 0755 i3bar/i3bgbar $(DESTDIR)$(PREFIX)/bin/
+	$(INSTALL) -m 0755 i3bar/i3bar $(DESTDIR)$(PREFIX)/bin/
 
 clean-i3bar:
 	echo "[i3bar] Clean"

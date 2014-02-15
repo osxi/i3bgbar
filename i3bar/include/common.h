@@ -5,8 +5,7 @@
  * © 2010-2011 Axel Wagner and contributors (see also: LICENSE)
  *
  */
-#ifndef COMMON_H_
-#define COMMON_H_
+#pragma once
 
 #include <stdbool.h>
 #include <xcb/xcb.h>
@@ -77,5 +76,3 @@ TAILQ_HEAD(statusline_head, status_block) l_statusline_head, r_statusline_head;
 #include "config.h"
 #include "libi3.h"
 #include "parse_json_header.h"
-
-#endif

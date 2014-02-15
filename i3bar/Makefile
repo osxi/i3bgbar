@@ -1,5 +1,5 @@
 all:
-	$(MAKE) -C .. i3bar/i3bgbar
+	$(MAKE) -C .. i3bar/i3bar
 
 install:
 	$(MAKE) -C .. install-i3bar

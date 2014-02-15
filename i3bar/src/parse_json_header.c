@@ -68,7 +68,7 @@ static int header_boolean(void *ctx, int val) {
             child->click_events = val;
             break;
         case KEY_CUSTOM_WS:
-        	config.custom_ws = val;
+            config.custom_ws = (bool)val;
             break;
         default:
             break;
@@ -99,20 +99,6 @@ static int header_map_key(void *ctx, const unsigned char *stringval, unsigned in
     return 1;
 }
 
-static yajl_callbacks version_callbacks = {
-    NULL, /* null */
-    &header_boolean, /* boolean */
-    &header_integer,
-    NULL, /* double */
-    NULL, /* number */
-    NULL, /* string */
-    NULL, /* start_map */
-    &header_map_key,
-    NULL, /* end_map */
-    NULL, /* start_array */
-    NULL /* end_array */
-};
-
 static void child_init(i3bar_child *child) {
     child->version = 0;
     child->stop_signal = SIGSTOP;
@@ -128,6 +114,12 @@ static void child_init(i3bar_child *child) {
  *
  */
 void parse_json_header(i3bar_child *child, const unsigned char *buffer, int length, unsigned int *consumed) {
+    static yajl_callbacks version_callbacks = {
+        .yajl_boolean = header_boolean,
+        .yajl_integer = header_integer,
+        .yajl_map_key = &header_map_key,
+    };
+
     child_init(child);
 
     current_key = NO_KEY;

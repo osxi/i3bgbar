@@ -100,9 +100,6 @@ void got_bar_config(char *reply) {
     /* Resolve color strings to colorpixels and save them, then free the strings. */
     init_colors(&(config.colors));
 
-    /* The name of this function is actually misleading. Even if no command is
-     * specified, this function initiates the watchers to listen on stdin and
-     * react accordingly */
     start_child(config.command);
     FREE(config.command);
 }
@@ -164,7 +161,7 @@ void got_bar_config_update(char *event) {
 
     /* update the configuration with the received settings */
     DLOG("Received bar config update \"%s\"\n", event);
-    int old_mode = config.hide_on_modifier;
+    bar_display_mode_t old_mode = config.hide_on_modifier;
     parse_config_json(event);
     if (old_mode != config.hide_on_modifier) {
         reconfig_windows(true);

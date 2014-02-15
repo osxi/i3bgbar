@@ -127,10 +127,6 @@ static int config_string_cb(void *params_, const unsigned char *val, unsigned in
     }
 
     if (!strcmp(cur_key, "status_command")) {
-        /* We cannot directly start the child here, because start_child() also
-         * needs to be run when no command was specified (to setup stdin).
-         * Therefore we save the command in 'config' and access it later in
-         * got_bar_config() */
         DLOG("command = %.*s\n", len, val);
         sasprintf(&config.command, "%.*s", len, val);
         return 1;
@@ -193,6 +189,12 @@ static int config_string_cb(void *params_, const unsigned char *val, unsigned in
  *
  */
 static int config_boolean_cb(void *params_, int val) {
+    if (!strcmp(cur_key, "binding_mode_indicator")) {
+        DLOG("binding_mode_indicator = %d\n", val);
+        config.disable_binding_mode_indicator = !val;
+        return 1;
+    }
+
     if (!strcmp(cur_key, "workspace_buttons")) {
         DLOG("workspace_buttons = %d\n", val);
         config.disable_ws = !val;
@@ -210,17 +212,10 @@ static int config_boolean_cb(void *params_, int val) {
 
 /* A datastructure to pass all these callbacks to yajl */
 static yajl_callbacks outputs_callbacks = {
-    &config_null_cb,
-    &config_boolean_cb,
-    NULL,
-    NULL,
-    NULL,
-    &config_string_cb,
-    NULL,
-    &config_map_key_cb,
-    NULL,
-    NULL,
-    NULL
+    .yajl_null = config_null_cb,
+    .yajl_boolean = config_boolean_cb,
+    .yajl_string = config_string_cb,
+    .yajl_map_key = config_map_key_cb,
 };
 
 /*
