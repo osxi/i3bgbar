@@ -1060,7 +1060,7 @@ char *init_xcb_early() {
     /* Now we get the atoms and save them in a nice data structure */
     get_atoms();
 
-    char *path = root_atom_contents("I3_SOCKET_PATH", xcb_connection, screen);
+    char *path = root_atom_contents("I3_SOCKET_PATH");
 
     if (xcb_request_failed(l_sl_pm_cookie, "Could not allocate statusline-buffer") ||
         xcb_request_failed(l_clear_ctx_cookie, "Could not allocate statusline-buffer-clearcontext") ||
